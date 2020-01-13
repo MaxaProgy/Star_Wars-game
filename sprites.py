@@ -1,28 +1,8 @@
 import os
 import random
-import pygame
+from image import load_image
 from const import *
 
-
-def load_image(path, use_transparency=False, rect_img=(0, 0)):
-    width, height = rect_img
-    try:  # Загрузка изображения
-        image = pygame.image.load(path)
-    except pygame.error:
-        print("Could not load the image: ", path)
-        raise SystemExit
-    if use_transparency:
-        image = image.convert()
-    else:  # Проверяем и добавляем прозрачность
-        image = image.convert_alpha()
-    if width >= 1 and height >= 1:  # Масштабировать изображение до указанного размера
-        image = scale_image(image, (width, height))
-    return image
-
-
-def scale_image(image, size_required):
-    scaled_img = pygame.transform.scale(image, size_required)
-    return scaled_img
 
 # =========================
 # СПРАЙТ ИГРОКА
@@ -32,13 +12,29 @@ def scale_image(image, size_required):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_image(os.path.join('data', 'images', 'spaceship', 'ship_center_motor_on.png'), False)
+        self.list_spaceship = []
+        self.index = 0
+        self.speed_image = 0
+        for i in range(10):  # Загружаем картинки
+            path_img = os.path.join('data', 'images', 'spaceship', "spaceship_" + str(i + 1) + '.png')
+            self.list_spaceship.append(load_image(path_img, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
+
+        self.image = self.list_spaceship[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT)
         self.x_speed = 0  # Перемещение по x
         self.y_speed = 0  # Перемещение по y
 
     def update(self):
+        self.speed_image += 1  # Обновляем значение, чтобы изменить изображение
+        if self.speed_image >= DELAY_EXPLOSION:  # Меняем изображение каждые 4 кадра
+            self.index += 1
+            self.speed_image = 0
+            if self.index < len(self.list_spaceship):  # Отображаем изображение
+                self.image = self.list_spaceship[self.index]
+            else:
+                self.index = 0
+
         self.rect.move_ip((self.x_speed, self.y_speed))  # Смещение коробля игрока в указанном направлении
         if self.rect.left < 0:  # Проверка на превышение стороны
             self.rect.left = 0
@@ -59,20 +55,38 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        path_img = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "images", "resources", "droid.png")
-        self.image = load_image(path_img, False)
+        self.list_droid = []
+        self.index = 0
+        self.speed_image = 0
+        for i in range(2):  # Загружаем картинки
+            path_img = os.path.join('data', 'images', 'droid', "droid_" + str(i + 1) + '.png')
+            self.list_droid.append(load_image(path_img, False, (LENGTH_DROID, WIDTH_DROID)))
+        self.image = self.list_droid[self.index]
         self.rect = self.image.get_rect()
+        self.rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT)
+        self.x_speed = 0  # Перемещение по x
+        self.y_speed = 0  # Перемещение по y
+
         # Случайное расположение
         self.rect.centerx = random.randint(40, 752)
         self.rect.centery = random.randint(60, 230)
         self.x_speed = random.randint(-5, 5)
         self.y_speed = random.randint(-5, 5)
-        if self.x_speed == 0:  # Если выдает 0, мы назначаем 1
+        if self.x_speed == 0:
             self.x_speed = 1
         elif self.y_speed == 0:
             self.y_speed = 1
 
     def update(self):
+        self.speed_image += 1  # Обновляем значение, чтобы изменить изображение
+        if self.speed_image >= DELAY_EXPLOSION:  # Меняем изображение каждые 4 кадра
+            self.index += 1
+            self.speed_image = 0
+            if self.index < len(self.list_droid):  # Отображаем изображение
+                self.image = self.list_droid[self.index]
+            else:
+                self.index = 0
+
         self.rect.move_ip((self.x_speed, self.y_speed))
         if self.rect.left <= 0 or self.rect.right >= WINDOW_WIDTH:
             self.x_speed = -self.x_speed
@@ -131,11 +145,27 @@ class Asteroid(pygame.sprite.Sprite):
 class PlayerLaser(pygame.sprite.Sprite):
     def __init__(self, p):
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_image(os.path.join('data', 'images', 'resources', 'laser1.png'), False)
+        self.list_laser = []
+        self.index = 0
+        self.speed_image = 0
+        for i in range(4):  # Загружаем картинки
+            path_img = os.path.join('data', 'images', 'player_laser', "laser_player_" + str(i + 1) + '.png')
+            self.list_laser.append(load_image(path_img, False, (LENGTH_LASER, WIDTH_LASER)))
+
+        self.image = self.list_laser[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = p
 
     def update(self):
+        self.speed_image += 1  # Обновляем значение, чтобы изменить изображение
+        if self.speed_image >= DELAY_EXPLOSION:  # Меняем изображение каждые 4 кадра
+            self.index += 1
+            self.speed_image = 0
+            if self.index < len(self.list_laser):  # Отображаем изображение
+                self.image = self.list_laser[self.index]
+            else:
+                self.index = 0
+
         if self.rect.bottom >= 0:
             self.rect.move_ip((0, -10))
         else:
@@ -150,11 +180,26 @@ class PlayerLaser(pygame.sprite.Sprite):
 class LaserEnemy(pygame.sprite.Sprite):
     def __init__(self, p):
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_image(os.path.join('data', 'images', 'resources', 'laser3.png'), False)
+        self.list_laser = []
+        self.index = 0
+        self.speed_image = 0
+        for i in range(4):  # Загружаем картинки
+            path_img = os.path.join('data', 'images', 'enemy_laser', "laser_enemy_" + str(i + 1) + '.png')
+            self.list_laser.append(load_image(path_img, False, (LENGTH_LASER, WIDTH_LASER)))
+
+        self.image = self.list_laser[self.index]
         self.rect = self.image.get_rect()
-        self.rect.midtop = p
+        self.rect.center = p
 
     def update(self):
+        self.speed_image += 1  # Обновляем значение, чтобы изменить изображение
+        if self.speed_image >= DELAY_EXPLOSION:  # Меняем изображение каждые 4 кадра
+            self.index += 1
+            self.speed_image = 0
+            if self.index < len(self.list_laser):  # Отображаем изображение
+                self.image = self.list_laser[self.index]
+            else:
+                self.index = 0
         if self.rect.bottom >= WINDOW_HEIGHT:
             self.kill()
         else:
