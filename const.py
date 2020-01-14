@@ -3,6 +3,7 @@ import pygame
 from image import load_image
 
 
+GAME_CHALLENGE = 100  # Количество дронов которых необходимо убить
 LENGTH_LASER = 50
 WIDTH_LASER = 50
 INIT_ENERGY = 100
