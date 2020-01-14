@@ -261,11 +261,6 @@ class Explosion(pygame.sprite.Sprite):
 # Создаем спрайты и группы
 # ================================
 
-# Настраиваем игрока
-player = Player()
-player_team = pygame.sprite.RenderUpdates(player)
-group_laser_player = pygame.sprite.RenderUpdates()
-
 # Настраиваем врагов
 enemy_team = pygame.sprite.RenderUpdates()
 for i in range(3):  # Добавляем 3 врагов

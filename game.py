@@ -1,9 +1,7 @@
 from os import path
-import pygame
 import sys
 import time
 from image import load_image
-from pygame.locals import *
 from sprites import *
 from const import *
 
@@ -41,6 +39,11 @@ class Game(object):
             energy = INIT_ENERGY
             points = 0
             counter_asteroid = 0
+
+            # Настраиваем игрока
+            player = Player()
+            group_laser_player = pygame.sprite.RenderUpdates()
+            player_team = pygame.sprite.RenderUpdates(player)
 
             # Меню игрока
             energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 0)
