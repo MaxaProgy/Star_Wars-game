@@ -35,8 +35,8 @@ class Player(pygame.sprite.Sprite):
                 self.index = 0
 
         self.rect.move_ip((self.x_speed, self.y_speed))  # Смещение коробля игрока в указанном направлении
-        if self.rect.left < 0:  # Проверка на превышение стороны
-            self.rect.left = 0
+        if self.rect.left < 250:  # Проверка на превышение стороны
+            self.rect.left = 250
         elif self.rect.right > WINDOW_WIDTH:
             self.rect.right = WINDOW_WIDTH
 
@@ -67,10 +67,10 @@ class Enemy(pygame.sprite.Sprite):
         self.y_speed = 0  # Перемещение по y
 
         # Случайное расположение
-        self.rect.centerx = random.randint(40, 752)
+        self.rect.centerx = random.randint(260, 752)
         self.rect.centery = random.randint(60, 230)
-        self.x_speed = random.randint(-5, 5)
-        self.y_speed = random.randint(-5, 5)
+        self.x_speed = random.randint(-7, 7)
+        self.y_speed = random.randint(-7, 7)
         if self.x_speed == 0:
             self.x_speed = 1
         elif self.y_speed == 0:
@@ -87,7 +87,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.index = 0
 
         self.rect.move_ip((self.x_speed, self.y_speed))
-        if self.rect.left <= 0 or self.rect.right >= WINDOW_WIDTH:
+        if self.rect.left <= 250 or self.rect.right >= WINDOW_WIDTH:
             self.x_speed = -self.x_speed
         if self.rect.top <= 0 or self.rect.bottom >= WINDOW_HEIGHT / 2:
             self.y_speed = -self.y_speed
@@ -117,14 +117,14 @@ class Asteroid(pygame.sprite.Sprite):
             self.image = self.select_image(os.path.join("resources", "asteroid.png"))
         self.rect = pygame.Rect(random.randint(0, WINDOW_WIDTH - self.size_asteroid),
                                 0 - self.size_asteroid, self.size_asteroid, self.size_asteroid)
-        self.rect.centerx = random.randint(48, WINDOW_WIDTH)
+        self.rect.centerx = random.randint(260, WINDOW_WIDTH)
         self.rect.centery = 0
         self.x_speed = random.randint(-ASTEROID_MAX_SPEED, ASTEROID_MAX_SPEED)
         self.y_speed = random.randint(ASTEROID_MIN_SPEED, ASTEROID_MAX_SPEED)
 
     def update(self):
         self.rect.move_ip(self.x_speed, self.y_speed)
-        if self.rect.left <= 0 or self.rect.right >= WINDOW_WIDTH or self.rect.bottom >= WINDOW_HEIGHT:
+        if self.rect.left <= 250 or self.rect.right >= WINDOW_WIDTH or self.rect.bottom >= WINDOW_HEIGHT:
             self.kill()
 
     def select_image(self, archive, is_energy=False):

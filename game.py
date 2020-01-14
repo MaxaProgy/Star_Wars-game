@@ -21,7 +21,7 @@ def show_game_result(points):
         image = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
     window.blit(image, (0, 0))
     pygame.display.update()
-    draw_text(str(points), font_5, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
+    draw_text(str(points), font_1, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
     pygame.display.update()
 
 
@@ -42,7 +42,7 @@ def pause_game():
                     exit_game()
                 if event.key == pygame.K_p:
                     pause = False
-        draw_text("PAUSE", font_5, window, (WINDOW_WIDTH / 2) - 50, (WINDOW_HEIGHT / 2))
+        draw_text("PAUSE", font_1, window, (WINDOW_WIDTH / 2) - 50, (WINDOW_HEIGHT / 2))
         pygame.display.update()
 
 
@@ -73,13 +73,7 @@ class Game(object):
         pygame.display.set_caption("Star Wars")
         self.time = pygame.time.Clock()
         pygame.mouse.set_visible(False)  # Прячем мышку на поле
-        # Соединяем путь к логотипу (с учётом особенностей операционной системы).
-        # Отображаем на экране
-        logo = load_image(path.join('data', 'images', 'background', 'start_logo.png'))
-        draw_text("Нажмите клавишу для запуска", font_1, window, (WINDOW_WIDTH / 5), (WINDOW_HEIGHT / 3) + 100)
-        window.blit(logo, (150, 100))
         pygame.display.update()
-
         wait_for_keystroke()
 
     def run(self):
@@ -108,15 +102,19 @@ class Game(object):
             group_energy = pygame.sprite.RenderUpdates()
             group_explosion = pygame.sprite.RenderUpdates()  # Имитация взрыва
 
+            # Фоновое изображение
+            background = load_image(path.join('data', 'images', 'background', 'background_2.jpg'), True, DISPLAYMODE)
+
             # Меню игрока
-            energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 0)
-            score_top_box = TextBox("Лучший счет: {}".format(score_top), font_1, 10, 40)
-            objectives_box = TextBox("Вы уничтожили: {} дроидов".format(destroyed_enemy_counter), font_1, 10, 80)
-            time_box = TextBox("Время: {0:.2f}".format(start_time), font_1, 10, 120)
-            points_box = TextBox("Точки: {}".format(points), font_1, 10, 160)
-            info_box = TextBox("Нажмите: ESC-Выход из игры     F1-Справка", font_1, 10, WINDOW_HEIGHT - 40)
-            group_box = pygame.sprite.RenderUpdates(points_box, score_top_box, objectives_box,
-                                                    time_box, energy_box, info_box)
+            energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 80)
+            score_top_box = TextBox("Лучший счет: {}".format(score_top), font_1, 10, 120)
+            objectives_box = TextBox("Вы уничтожили: {} дроидов".format(destroyed_enemy_counter), font_1, 10, 160)
+            challenge_box = TextBox("Осталось: {} дроидов".format(GAME_CHALLENGE - destroyed_enemy_counter),
+                                    font_1, 10, 200)
+            time_box = TextBox("Время: {0:.2f}".format(start_time), font_1, 10, 240)
+            points_box = TextBox("Точки: {}".format(points), font_1, 10, 280)
+            group_box = pygame.sprite.RenderUpdates(points_box, score_top_box, objectives_box, challenge_box,
+                                                    time_box, energy_box)
 
             counter_loop = 0
             check_on_press_keys = True
@@ -274,8 +272,8 @@ class Game(object):
                 points_box.text = "Точки: {}".format(points)
                 score_top_box.text = "Лучший счет: {}".format(score_top)
                 objectives_box.text = "Вы уничтожили: {} дроидов".format(destroyed_enemy_counter)
+                challenge_box.text = "Осталось: {} дроидов".format(GAME_CHALLENGE - destroyed_enemy_counter)
                 time_box.text = "Время: %.2f" % time_elapsed
-                info_box.text = "Press: ESC-Exit     F1-Help"
 
                 pygame.display.update()
                 self.time.tick(FPS)

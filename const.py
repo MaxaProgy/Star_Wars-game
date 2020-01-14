@@ -10,8 +10,8 @@ LENGTH_DROID = 50
 WIDTH_DROID = 50
 LENGTH_SPACESHIP = 40
 WIDTH_SPACESHIP = 80
-WINDOW_WIDTH = 750
-WINDOW_HEIGHT = 750
+WINDOW_WIDTH = 1100
+WINDOW_HEIGHT = 800
 DISPLAYMODE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 TEXTCOLOR = (255, 255, 255)
 FPS = 40
@@ -27,13 +27,9 @@ PROB_ENERGETIC_ASTEROID = 0.4  # Вероятность, которая опре
 # Шрифты
 pygame.init()
 window = pygame.display.set_mode(DISPLAYMODE)
-font_1 = pygame.font.SysFont("DS Sofachrome", 12)
-font_2 = pygame.font.SysFont("Liberation Serif", 20)
-font_3 = pygame.font.SysFont("Arial", 20)
-font_4 = pygame.font.SysFont("Times New Roman", 36)
-font_5 = pygame.font.SysFont("Liberation Serif", 40)  # Points
+font_1 = pygame.font.SysFont("RetroComputer[RUS by Daymarius]", 22)
 
 # Фоновое изображение
-background = load_image(path.join('data', 'images', 'background', 'background.jpg'), True, DISPLAYMODE)
+background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
 
 window.blit(background, (0, 0))
