@@ -1,6 +1,5 @@
 import os
 import random
-from image import load_image
 from const import *
 
 
@@ -124,7 +123,7 @@ class Asteroid(pygame.sprite.Sprite):
         self.y_speed = random.randint(ASTEROID_MIN_SPEED, ASTEROID_MAX_SPEED)
 
     def update(self):
-        self.rect.move_ip((self.x_speed, self.y_speed))
+        self.rect.move_ip(self.x_speed, self.y_speed)
         if self.rect.left <= 0 or self.rect.right >= WINDOW_WIDTH or self.rect.bottom >= WINDOW_HEIGHT:
             self.kill()
 
@@ -255,5 +254,6 @@ class Explosion(pygame.sprite.Sprite):
                 self.image = self.sp_image_explosion[self.index]
             else:  # Или удаляем объект
                 self.kill()
+
 
 group_laser_enemy = pygame.sprite.RenderUpdates()
