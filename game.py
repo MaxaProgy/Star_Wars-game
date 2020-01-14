@@ -5,8 +5,8 @@ from image import load_image
 from sprites import *
 from const import *
 
-# Задача игры - уничтожить 100 врагов
-GAME_CHALLENGE = 100
+# Он будет увеличиваться по мере уничтожения дроидов, пока мы не достигнем цели
+destroyed_enemy_counter = 0
 
 
 class Game(object):
@@ -26,7 +26,7 @@ class Game(object):
         self.wait_for_keystroke()
 
     def run(self):
-        global player, GAME_CHALLENGE
+        global destroyed_enemy_counter
         score_top = 0
 
         while True:
@@ -40,15 +40,21 @@ class Game(object):
             points = 0
             counter_asteroid = 0
 
-            # Настраиваем игрока
-            player = Player()
+            # Настраиваем игрока и врага
+            player = Player()  # Настраиваем игрока
             group_laser_player = pygame.sprite.RenderUpdates()
             player_team = pygame.sprite.RenderUpdates(player)
+            enemy_team = pygame.sprite.RenderUpdates()
+            for i in range(3):
+                enemy_team.add(Enemy())
+            group_asteroids = pygame.sprite.RenderUpdates()  # Настраиваем врагов
+            group_energy = pygame.sprite.RenderUpdates()
+            group_explosion = pygame.sprite.RenderUpdates()  # Имитация взрыва
 
             # Меню игрока
             energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 0)
             score_top_box = TextBox("Лучший счет: {}".format(score_top), font_1, 10, 40)
-            objectives_box = TextBox("Задача: {}".format(GAME_CHALLENGE), font_1, 10, 80)
+            objectives_box = TextBox("Вы уничтожили: {} дроидов".format(destroyed_enemy_counter), font_1, 10, 80)
             time_box = TextBox("Время: {0:.2f}".format(start_time), font_1, 10, 120)
             points_box = TextBox("Точки: {}".format(points), font_1, 10, 160)
             info_box = TextBox("Нажмите: ESC-Выход из игры     F1-Справка", font_1, 10, WINDOW_HEIGHT - 40)
@@ -126,14 +132,14 @@ class Game(object):
 
                 # Смерть персонажа. Мы проверяем, что это сделано один раз
                 if energy <= 0 and check_on_press_keys:
-                    if points > score_top: # Мы проверяем, превышает ли он лучший результат
+                    if points > score_top:  # Мы проверяем, превышает ли он лучший результат
                         score_top = points
                     check_on_press_keys = False  # Чтобы отключить ввод нажатий клавиш
                     group_explosion.add(Explosion(player.rect))
                     player.kill()  # Мы убиваем персонажа
                     loop_counter = 0
-                # Победить персонажа
-                elif GAME_CHALLENGE <= 0:
+                # Игрок выигрывает
+                elif destroyed_enemy_counter >= GAME_CHALLENGE:
                     if points > score_top:  # Мы проверяем, превышает ли он лучший результат
                         score_top = points
                     check_on_press_keys = False  # Чтобы отключить ввод нажатий клавиш
@@ -150,7 +156,7 @@ class Game(object):
                 for droid in pygame.sprite.groupcollide(enemy_team, group_laser_player, True, True):
                     points += 15
                     group_explosion.add(Explosion(droid.rect, "explosion"))  # Исчезает во взрыве
-                    GAME_CHALLENGE -= 1
+                    destroyed_enemy_counter +=1
                 # Лазер уничтожает астероиды
                 for asteroid in pygame.sprite.groupcollide(group_asteroids, group_laser_player, False, True):
                     points += 5
@@ -213,7 +219,7 @@ class Game(object):
                 energy_box.text = "Энергия: {0}%".format(int(energy))
                 points_box.text = "Точки: {}".format(points)
                 score_top_box.text = "Лучший счет: {}".format(score_top)
-                objectives_box.text = "Осталось убить : {} дроидов".format(GAME_CHALLENGE)
+                objectives_box.text = "Вы уничтожили: {} дроидов".format(destroyed_enemy_counter)
                 time_box.text = "Время: %.2f" % time_elapsed
                 info_box.text = "Press: ESC-Exit     F1-Help"
 
@@ -244,13 +250,13 @@ class Game(object):
         self.wait_for_keystroke()  # Мы не выйдем из цикла, пока не нажмем любую клавишу
 
     def show_game_result(self, points):
-        if GAME_CHALLENGE <= 0:
+        if destroyed_enemy_counter   <= 0:
             image = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
         else:
             image = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
         window.blit(image, (0, 0))
         pygame.display.update()
-        self.draw_text(str(points), font_5, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
+        self.draw_text(str(points),  font_5, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
         pygame.display.update()
 
     def wait_for_keystroke(self):

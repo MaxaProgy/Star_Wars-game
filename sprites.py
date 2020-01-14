@@ -257,19 +257,4 @@ class Explosion(pygame.sprite.Sprite):
                 self.kill()
 
 
-# ================================
-# Создаем спрайты и группы
-# ================================
-
-# Настраиваем врагов
-enemy_team = pygame.sprite.RenderUpdates()
-for i in range(3):  # Добавляем 3 врагов
-    enemy_team.add(Enemy())
 group_laser_enemy = pygame.sprite.RenderUpdates()
-
-# Настраиваем астероиды
-group_asteroids = pygame.sprite.RenderUpdates()
-group_energy = pygame.sprite.RenderUpdates()
-
-# Мы создаем объект для амитации взрыва
-group_explosion = pygame.sprite.RenderUpdates()
