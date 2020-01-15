@@ -21,7 +21,7 @@ def show_game_result(points):
         image = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
     window.blit(image, (0, 0))
     pygame.display.update()
-    draw_text(str(points), font_1, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
+    draw_text(str(points), font_2, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
     pygame.display.update()
 
 
@@ -38,7 +38,6 @@ def pause_game():
                 exit_game()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:  # Нажав клавишу esc, мы выходим из игры
-
                     exit_game()
                 if event.key == pygame.K_p:
                     pause = False
@@ -58,12 +57,31 @@ def wait_for_keystroke():
 
 
 def show_help():
-    img_help = load_image(path.join('data', 'images', 'background', 'help.jpg'), True, DISPLAYMODE)
+    img_help = load_image(path.join('data', 'images', 'background', 'background_help.jpg'), True, DISPLAYMODE)
     window.blit(img_help, (0, 0))  # Изображение для покрытия фона
-    pygame.display.update()  # Мы рисуем весь экран, чтобы стереть предыдущее изображение
-    draw_text('Нажмите клавишу, чтобы возобновить игру', font_1, window, (WINDOW_WIDTH / 3), WINDOW_HEIGHT - 20)
     pygame.display.update()
     wait_for_keystroke()  # Мы не выйдем из цикла, пока не нажмем любую клавишу
+
+
+def show_list_nik():
+    img_nik = load_image(path.join('data', 'images', 'background', 'background_nik.jpg'), True, DISPLAYMODE)
+    window.blit(img_nik, (0, 0))  # Изображение для покрытия фона
+    list_nik = []
+    pygame.draw.rect(window, (229, 163, 164), (120, 140, 100, 100), 6)
+    for i in range(NUMBER_NIK):  # Загружаем картинки
+        path_img = os.path.join('data', 'images', 'spaceship', str(i + 1), "spaceship_3.png")
+        list_nik.append(load_image(path_img, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
+        image_nik = list_nik[i]
+        window.blit(image_nik, (150 * (i + 1), 150))
+    pygame.display.update()
+    wait_for_keystroke()
+    '''key_pressed = pygame.key.get_pressed()
+        if key_pressed[pygame.K_LEFT]:
+            for i in range(NUMBER_NIK):
+                pygame.draw.rect(window, (229, 163, 164), (120 + 100 * i, 140, 100, 100), 6)
+        if key_pressed[pygame.K_RIGHT]:
+            for i in range(NUMBER_NIK):
+                pygame.draw.rect(window, (229, 163, 164), (120 + 100 * i, 140, 100, 100), 6)'''
 
 
 class Game(object):
@@ -103,7 +121,7 @@ class Game(object):
             group_explosion = pygame.sprite.RenderUpdates()  # Имитация взрыва
 
             # Фоновое изображение
-            background = load_image(path.join('data', 'images', 'background', 'background_2.jpg'), True, DISPLAYMODE)
+            background_game = load_image(path.join('data', 'images', 'background', 'background_2.jpg'), True, DISPLAYMODE)
 
             # Меню игрока
             energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 80)
@@ -120,7 +138,7 @@ class Game(object):
             check_on_press_keys = True
             while True:
                 # Отрисовываем задний фон
-                window.blit(background, (0, 0))
+                window.blit(background_game, (0, 0))
                 # После проигрыша доступ к клавишам ограничивается
                 if check_on_press_keys:
                     for event in pygame.event.get():
@@ -129,6 +147,8 @@ class Game(object):
                         elif event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_F1:
                                 show_help()
+                            if event.key == pygame.K_F2:
+                                show_list_nik()
                             if event.key == pygame.K_p:
                                 pause_game()
                             if event.key == pygame.K_ESCAPE:
@@ -183,7 +203,7 @@ class Game(object):
                     time_current = time.clock()
                 # Устонавливаем конечное время
                 time_elapsed = time_current - start_time
-                time_elapsed = time_elapsed * 2
+                time_elapsed *= 2
 
                 # Смерть персонажа. Мы проверяем, что это сделано один раз
                 if energy <= 0 and check_on_press_keys:
@@ -224,11 +244,11 @@ class Game(object):
                         asteroid.kill()
                 # Когда астероид попадает на корабль
                 for asteroid in pygame.sprite.groupcollide(group_asteroids, player_team, True, False):
-                    energy = energy - 7  # Уменьшить энергию, которую имеет корабль
+                    energy -= 7  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(asteroid.rect, "smoke"))
                 # Когда дроид попадает на корабль
                 for droid in pygame.sprite.groupcollide(enemy_team, player_team, True, False):
-                    energy = energy - 7  # Уменьшить энергию, которую имеет корабль
+                    energy -= 7  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(droid.rect, "explosion"))
                 # Когда мы прикасаемся к энергии
                 for e in pygame.sprite.groupcollide(group_energy, player_team, True, False):
@@ -250,14 +270,14 @@ class Game(object):
                 # =======================
                 # ОЧИЩАЕМ СПРАЙТЫ
                 # =======================
-                player_team.clear(window, background)
-                group_laser_player.clear(window, background)
-                enemy_team.clear(window, background)
-                group_laser_enemy.clear(window, background)
-                group_asteroids.clear(window, background)
-                group_energy.clear(window, background)
-                group_box.clear(window, background)
-                group_explosion.clear(window, background)
+                player_team.clear(window, background_game)
+                group_laser_player.clear(window, background_game)
+                enemy_team.clear(window, background_game)
+                group_laser_enemy.clear(window, background_game)
+                group_asteroids.clear(window, background_game)
+                group_energy.clear(window, background_game)
+                group_box.clear(window, background_game)
+                group_explosion.clear(window, background_game)
                 player_team.draw(window)
                 group_laser_player.draw(window)
                 enemy_team.draw(window)

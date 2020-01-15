@@ -6,7 +6,6 @@ def load_image(path, use_transparency=False, rect_img=(0, 0)):
     try:  # Загрузка изображения
         image = pygame.image.load(path)
     except pygame.error:
-        print("Could not load the image: ", path)
         raise SystemExit
     if use_transparency:
         image = image.convert()

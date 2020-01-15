@@ -9,13 +9,13 @@ from const import *
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, index_nik=1):
         pygame.sprite.Sprite.__init__(self)
         self.list_spaceship = []
         self.index = 0
         self.speed_image = 0
         for i in range(10):  # Загружаем картинки
-            path_img = os.path.join('data', 'images', 'spaceship', "spaceship_" + str(i + 1) + '.png')
+            path_img = os.path.join('data', 'images', 'spaceship', str(index_nik),  "spaceship_" + str(i + 1) + '.png')
             self.list_spaceship.append(load_image(path_img, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
 
         self.image = self.list_spaceship[self.index]

@@ -2,6 +2,7 @@ from os import path
 import pygame
 from image import load_image
 
+NUMBER_NIK = 2
 GAME_CHALLENGE = 100  # Количество дронов которых необходимо убить
 LENGTH_LASER = 50
 WIDTH_LASER = 50
@@ -28,6 +29,8 @@ PROB_ENERGETIC_ASTEROID = 0.4  # Вероятность, которая опре
 pygame.init()
 window = pygame.display.set_mode(DISPLAYMODE)
 font_1 = pygame.font.SysFont("RetroComputer[RUS by Daymarius]", 22)
+font_2 = pygame.font.SysFont("RetroComputer[RUS by Daymarius]", 100)
+
 
 # Фоновое изображение
 background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
