@@ -7,9 +7,10 @@ destroyed_enemy_counter = 0
 game_challenge = 25  # Количество дронов которых необходимо убить
 index_nick = 1
 lvl = 1
+count_laser = 100
 
 
-def show_energy_bar(energy):
+def show_energy_bar(energy):  # Шкала энергии
     color = 2.55 * energy
 
     color_rgb = (255 - color, color, 0)
@@ -20,6 +21,19 @@ def show_energy_bar(energy):
         pygame.draw.rect(window, (0, 0, 0), (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 30, 20, -10 * (i + 1)), 2)
 
     pygame.draw.rect(window, (255, 255, 255), (WINDOW_WIDTH - 35, WINDOW_HEIGHT - 25, 30, -110), 2)
+
+
+def show_laser_bar(laser):  # Шкала лазеров
+    color = 2.55 * laser
+
+    color_rgb = (255 - color, color, 0)
+    pygame.draw.rect(window, (0, 0, 0), (WINDOW_WIDTH - 35, WINDOW_HEIGHT - 135, 30, -110))
+    pygame.draw.rect(window, color_rgb, (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 140, 20, -1 * laser))
+
+    for i in range(10):
+        pygame.draw.rect(window, (0, 0, 0), (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 140, 20, -10 * (i + 1)), 2)
+
+    pygame.draw.rect(window, (255, 255, 255), (WINDOW_WIDTH - 35, WINDOW_HEIGHT - 135, 30, -110), 2)
 
 
 def draw_text(text, source, surface, x, y):
@@ -132,11 +146,21 @@ class Game(object):
         self.time = pygame.time.Clock()
         pygame.mouse.set_visible(False)  # Прячем мышку на поле
         pygame.display.update()
-        wait_for_keystroke()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit_game()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
+                        exit_game()
+                    if event.key == pygame.K_SPACE:
+                        return
 
     def run(self):
-        global destroyed_enemy_counter, game_challenge
+        global destroyed_enemy_counter, game_challenge, count_laser
         score_top = 0
+        delay_laser = 0
+        fps_laser = 0
 
         while True:
             if not time.clock():
@@ -194,7 +218,7 @@ class Game(object):
                             if event.key == pygame.K_ESCAPE:
                                 exit_game()
                             if event.key == pygame.K_SPACE:
-                                group_laser_player.add(PlayerLaser(player.rect.midtop))
+                                delay_laser = 9
                         elif event.type == pygame.KEYUP:
                             player.x_speed, player.y_speed = 0, 0
 
@@ -208,6 +232,19 @@ class Game(object):
                         player.y_speed = -RATE_PLAYER_SPEED
                     if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
                         player.y_speed = RATE_PLAYER_SPEED
+                    if key_pressed[pygame.K_SPACE]:
+                        delay_laser += 1
+                        fps_laser = 0
+                        if delay_laser == 10:
+                            group_laser_player.add(PlayerLaser(player.rect.midtop))
+                            delay_laser = 0
+                            count_laser -= 1
+                    else:
+                        fps_laser += 1
+                        if fps_laser == 40 and count_laser < 100:
+                            count_laser += 1
+                            fps_laser = 0
+
                 else:  # Мы входим в блок сразу после того, как энергия заканчивается
                     # (ЗАДЕРЖКА * 6 - количество изображений анимации) + еще 20 циклов, чтобы иметь момент паузы
                     total_loops = (DELAY_EXPLOSION * 6) + 20
@@ -261,7 +298,7 @@ class Game(object):
 
                 # Урон, нанесенный врагом игроку
                 for player in pygame.sprite.groupcollide(player_team, group_laser_enemy, False, True):
-                    energy -= 5
+                    energy -= 15
                 # Лазер уничтожает вражеский корабль
                 for droid in pygame.sprite.groupcollide(enemy_team, group_laser_player, True, True):
                     points += 15
@@ -335,6 +372,7 @@ class Game(object):
                 elif energy > 100:
                     energy = 100
                 show_energy_bar(energy)
+                show_laser_bar(count_laser)
 
                 pygame.display.update()
                 self.time.tick(FPS)
