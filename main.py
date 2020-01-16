@@ -1,7 +1,7 @@
 from game import Game
 
 
-def main():
+def main():  # Функция вызова игры
     game = StarWars()
     game.run()
 

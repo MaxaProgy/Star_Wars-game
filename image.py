@@ -1,7 +1,7 @@
 import pygame
 
 
-def load_image(path, use_transparency=False, rect_img=(0, 0)):
+def load_image(path, use_transparency=False, rect_img=(0, 0)):  # Функция загрузки фото
     width, height = rect_img
     try:  # Загрузка изображения
         image = pygame.image.load(path)
