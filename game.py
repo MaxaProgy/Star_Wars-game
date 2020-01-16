@@ -6,6 +6,7 @@ from sprites import *
 destroyed_enemy_counter = 0
 game_challenge = 1  # Количество дронов которых необходимо убить
 game_challenge_new = 1
+index_nik = 1
 
 
 def draw_text(text, source, surface, x, y):
@@ -79,13 +80,28 @@ def show_list_nik():
         image_nik = list_nik[j]
         window.blit(image_nik, (150 * (j + 1), 150))
     pygame.display.update()
-    wait_for_keystroke()
     while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit_game()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
+                    exit_game()
+                if event.key == pygame.K_BACKSPACE:
+                    return
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_1]:
-            pass
+            return update_player(1)
         if key_pressed[pygame.K_2]:
-            pass
+            return update_player(2)
+
+
+def update_player(index):
+    player = Player(index)  # Настраиваем игрока
+    group_laser_player = pygame.sprite.RenderUpdates()
+    player_team = pygame.sprite.RenderUpdates(player)
+    enemy_team = pygame.sprite.RenderUpdates()
+    return player, group_laser_player, player_team, enemy_team
 
 
 class Game(object):
@@ -114,10 +130,7 @@ class Game(object):
             counter_asteroid = 0
 
             # Настраиваем игрока и врага
-            player = Player()  # Настраиваем игрока
-            group_laser_player = pygame.sprite.RenderUpdates()
-            player_team = pygame.sprite.RenderUpdates(player)
-            enemy_team = pygame.sprite.RenderUpdates()
+            player, group_laser_player, player_team, enemy_team = update_player(index_nik)
             for _ in range(3):
                 enemy_team.add(Enemy())
             group_asteroids = pygame.sprite.RenderUpdates()  # Настраиваем врагов
@@ -154,7 +167,8 @@ class Game(object):
                             if event.key == pygame.K_F1:
                                 show_help()
                             if event.key == pygame.K_F2:
-                                show_list_nik()
+                                player.kill()
+                                player, group_laser_player, player_team, enemy_team = show_list_nik()
                             if event.key == pygame.K_p:
                                 pause_game()
                             if event.key == pygame.K_ESCAPE:
