@@ -4,6 +4,8 @@ from sprites import *
 
 # Он будет увеличиваться по мере уничтожения дроидов, пока мы не достигнем цели
 destroyed_enemy_counter = 0
+game_challenge = 1  # Количество дронов которых необходимо убить
+game_challenge_new = 1
 
 
 def draw_text(text, source, surface, x, y):
@@ -15,10 +17,13 @@ def draw_text(text, source, surface, x, y):
 
 
 def show_game_result(points):
-    if destroyed_enemy_counter >= GAME_CHALLENGE:
+    global destroyed_enemy_counter, game_challenge, game_challenge_new
+    if destroyed_enemy_counter >= game_challenge:
         img = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
     else:
         img = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
+    destroyed_enemy_counter = 0
+    game_challenge = game_challenge_new
     window.blit(img, (0, 0))
     pygame.display.update()
     draw_text(str(points), font_2, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
@@ -101,7 +106,7 @@ class Game(object):
         wait_for_keystroke()
 
     def run(self):
-        global destroyed_enemy_counter
+        global destroyed_enemy_counter, game_challenge_new, game_challenge
         score_top = 0
 
         while True:
@@ -134,12 +139,13 @@ class Game(object):
             energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 80)
             score_top_box = TextBox("Лучший счет: {}".format(score_top), font_1, 10, 120)
             objectives_box = TextBox("Вы уничтожили: {} дроидов".format(destroyed_enemy_counter), font_1, 10, 160)
-            challenge_box = TextBox("Осталось: {} дроидов".format(GAME_CHALLENGE - destroyed_enemy_counter),
+            challenge_box = TextBox("Осталось: {} дроидов".format(game_challenge - destroyed_enemy_counter),
                                     font_1, 10, 200)
             time_box = TextBox("Время: {0:.2f}".format(start_time), font_1, 10, 240)
-            points_box = TextBox("Точки: {}".format(points), font_1, 10, 280)
+            points_box = TextBox("Счёт: {}".format(points), font_1, 10, 280)
+            lvl = TextBox("Уровень: {}".format(game_challenge), font_1, 10, 320)
             group_box = pygame.sprite.RenderUpdates(points_box, score_top_box, objectives_box, challenge_box,
-                                                    time_box, energy_box)
+                                                    time_box, energy_box, lvl)
 
             counter_loop = 0
             check_on_press_keys = True
@@ -215,10 +221,12 @@ class Game(object):
                 # Смерть персонажа. Мы проверяем, что это сделано один раз
                 if energy <= 0 and check_on_press_keys:
                     check_on_press_keys = False  # Чтобы отключить ввод нажатий клавиш
+                    game_challenge_new = 1
                     group_explosion.add(Explosion(player.rect))
                     player.kill()  # Мы убиваем персонажа
                 # Игрок выигрывает
-                elif destroyed_enemy_counter >= GAME_CHALLENGE:
+                elif destroyed_enemy_counter >= game_challenge:
+                    game_challenge_new += 1
                     player.kill()
                     break
 
@@ -294,10 +302,10 @@ class Game(object):
 
                 # Вносим новые значения в меню игрока
                 energy_box.text = "Энергия: {0}%".format(int(energy))
-                points_box.text = "Точки: {}".format(points)
+                points_box.text = "Счёт: {}".format(points)
                 score_top_box.text = "Лучший счет: {}".format(score_top)
                 objectives_box.text = "Вы уничтожили: {} дроидов".format(destroyed_enemy_counter)
-                challenge_box.text = "Осталось: {} дроидов".format(GAME_CHALLENGE - destroyed_enemy_counter)
+                challenge_box.text = "Осталось: {} дроидов".format(game_challenge - destroyed_enemy_counter)
                 time_box.text = "Время: %.2f" % time_elapsed
 
                 pygame.display.update()
@@ -307,6 +315,6 @@ class Game(object):
             if points > score_top:  # Мы проверяем, превышает ли он лучший результат
                 score_top = points
             show_game_result(points)
-            time_lapse = 4000  # 4 sec
+            time_lapse = 1000
             pygame.time.delay(time_lapse)
             wait_for_keystroke()
