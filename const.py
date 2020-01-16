@@ -1,4 +1,5 @@
 import pygame
+# Файл констант
 
 COUNT_LASER = 50
 NUMBER_NIK = 2

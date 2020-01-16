@@ -2,7 +2,7 @@ import os
 import random
 from const import *
 from image import load_image
-
+# Файл спрайтов
 
 # =========================
 # СПРАЙТ ИГРОКА

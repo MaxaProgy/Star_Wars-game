@@ -1,6 +1,7 @@
 import time
 from sprites import *
 from os import *
+import sys
 from image import load_image
 
 # Он будет увеличиваться по мере уничтожения дроидов, пока мы не достигнем цели
