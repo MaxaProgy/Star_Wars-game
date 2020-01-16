@@ -58,7 +58,8 @@ def wait_for_keystroke():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
                     exit_game()
-                return  # Нажав любую клавишу мы уходим и игра начинается
+                if event.key == pygame.K_BACKSPACE:
+                    return
 
 
 def show_help():
@@ -78,16 +79,8 @@ def show_list_nik():
         image_nik = list_nik[j]
         window.blit(image_nik, (150 * (j + 1), 150))
     pygame.display.update()
-
+    wait_for_keystroke()
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                exit_game()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
-                    exit_game()
-                if event.key == pygame.K_BACKSPACE:
-                    return
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_1]:
             pass
@@ -257,11 +250,11 @@ class Game(object):
                         asteroid.kill()
                 # Когда астероид попадает на корабль
                 for asteroid in pygame.sprite.groupcollide(group_asteroids, player_team, True, False):
-                    energy -= 7  # Уменьшить энергию, которую имеет корабль
+                    energy -= 12  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(asteroid.rect, "smoke"))
                 # Когда дроид попадает на корабль
                 for droid in pygame.sprite.groupcollide(enemy_team, player_team, True, False):
-                    energy -= 7  # Уменьшить энергию, которую имеет корабль
+                    energy -= 12  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(droid.rect, "explosion"))
                 # Когда мы прикасаемся к энергии
                 for e in pygame.sprite.groupcollide(group_energy, player_team, True, False):

@@ -107,12 +107,9 @@ class Asteroid(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.size_asteroid = ASTEROID_SIZE
         self.is_energetic = (random.random() < PROB_ENERGETIC_ASTEROID)  # Определяем дает ли текущий астероид энергию
-        self.energy_lvl = 0  # Уровень энергии, которая дается астероидом (0 без энергии)
+        self.energy_lvl = 10  # Уровень энергии, которая дается астероидом
         if self.is_energetic:
             self.image = self.select_image(os.path.join("resources", "energetic_asteroid.png"))
-            # Определяем кол-во энергии в зависимости от размера астероида
-            if self.size_asteroid == 30:
-                self.energy_lvl = 10
         else:
             self.image = self.select_image(os.path.join("resources", "asteroid.png"))
         self.rect = pygame.Rect(random.randint(0, WINDOW_WIDTH - self.size_asteroid),
