@@ -29,9 +29,3 @@ pygame.init()
 window = pygame.display.set_mode(DISPLAYMODE)
 font_1 = pygame.font.SysFont("RetroComputer[RUS by Daymarius]", 22)
 font_2 = pygame.font.SysFont("RetroComputer[RUS by Daymarius]", 100)
-
-
-# Фоновое изображение
-background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
-
-window.blit(background, (0, 0))

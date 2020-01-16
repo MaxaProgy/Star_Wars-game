@@ -4,9 +4,22 @@ from sprites import *
 
 # Он будет увеличиваться по мере уничтожения дроидов, пока мы не достигнем цели
 destroyed_enemy_counter = 0
-game_challenge = 1  # Количество дронов которых необходимо убить
-game_challenge_new = 1
+game_challenge = 25  # Количество дронов которых необходимо убить
 index_nick = 1
+lvl = 1
+
+
+def show_energy_bar(energy):
+    color = 2.55 * energy
+
+    color_rgb = (255 - color, color, 0)
+    pygame.draw.rect(window, (0, 0, 0), (WINDOW_WIDTH - 35, WINDOW_HEIGHT - 25, 30, -110))
+    pygame.draw.rect(window, color_rgb, (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 30, 20, -1 * energy))
+
+    for i in range(10):
+        pygame.draw.rect(window, (0, 0, 0), (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 30, 20, -10 * (i + 1)), 2)
+
+    pygame.draw.rect(window, (255, 255, 255), (WINDOW_WIDTH - 35, WINDOW_HEIGHT - 25, 30, -110), 2)
 
 
 def draw_text(text, source, surface, x, y):
@@ -18,13 +31,16 @@ def draw_text(text, source, surface, x, y):
 
 
 def show_game_result(points):
-    global destroyed_enemy_counter, game_challenge, game_challenge_new
+    global destroyed_enemy_counter, game_challenge, lvl
     if destroyed_enemy_counter >= game_challenge:
         img = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
+        lvl += 1
+        game_challenge += 5
     else:
         img = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
+        lvl = 1
+        game_challenge = 25
     destroyed_enemy_counter = 0
-    game_challenge = game_challenge_new
     window.blit(img, (0, 0))
     pygame.display.update()
     draw_text(str(points), font_2, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
@@ -109,13 +125,17 @@ class Game(object):
         super(Game, self).__init__()
         pygame.init()
         pygame.display.set_caption("Star Wars")
+        pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        # Фоновое изображение
+        background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
+        window.blit(background, (0, 0))
         self.time = pygame.time.Clock()
         pygame.mouse.set_visible(False)  # Прячем мышку на поле
         pygame.display.update()
         wait_for_keystroke()
 
     def run(self):
-        global destroyed_enemy_counter, game_challenge_new, game_challenge
+        global destroyed_enemy_counter, game_challenge
         score_top = 0
 
         while True:
@@ -149,9 +169,9 @@ class Game(object):
                                     font_1, 10, 200)
             time_box = TextBox("Время: {0:.2f}".format(start_time), font_1, 10, 240)
             points_box = TextBox("Счёт: {}".format(points), font_1, 10, 280)
-            lvl = TextBox("Уровень: {}".format(game_challenge), font_1, 10, 320)
+            lvl_box = TextBox("Уровень: {}".format(lvl), font_1, 10, 320)
             group_box = pygame.sprite.RenderUpdates(points_box, score_top_box, objectives_box, challenge_box,
-                                                    time_box, energy_box, lvl)
+                                                    time_box, energy_box, lvl_box)
 
             counter_loop = 0
             check_on_press_keys = True
@@ -180,13 +200,13 @@ class Game(object):
 
                     # Перемещение игрока в пространстве(на экране)
                     key_pressed = pygame.key.get_pressed()
-                    if key_pressed[pygame.K_LEFT]:
+                    if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
                         player.x_speed = -RATE_PLAYER_SPEED
-                    if key_pressed[pygame.K_RIGHT]:
+                    if key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
                         player.x_speed = RATE_PLAYER_SPEED
-                    if key_pressed[pygame.K_UP]:
+                    if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
                         player.y_speed = -RATE_PLAYER_SPEED
-                    if key_pressed[pygame.K_DOWN]:
+                    if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
                         player.y_speed = RATE_PLAYER_SPEED
                 else:  # Мы входим в блок сразу после того, как энергия заканчивается
                     # (ЗАДЕРЖКА * 6 - количество изображений анимации) + еще 20 циклов, чтобы иметь момент паузы
@@ -226,14 +246,12 @@ class Game(object):
                 time_elapsed *= 2
 
                 # Смерть персонажа. Мы проверяем, что это сделано один раз
-                if energy <= 0 and check_on_press_keys:
+                if energy == 0 and check_on_press_keys:
                     check_on_press_keys = False  # Чтобы отключить ввод нажатий клавиш
-                    game_challenge_new = 1
                     group_explosion.add(Explosion(player.rect))
                     player.kill()  # Мы убиваем персонажа
                 # Игрок выигрывает
                 elif destroyed_enemy_counter >= game_challenge:
-                    game_challenge_new += 1
                     player.kill()
                     break
 
@@ -243,7 +261,7 @@ class Game(object):
 
                 # Урон, нанесенный врагом игроку
                 for player in pygame.sprite.groupcollide(player_team, group_laser_enemy, False, True):
-                    energy = energy - 5
+                    energy -= 5
                 # Лазер уничтожает вражеский корабль
                 for droid in pygame.sprite.groupcollide(enemy_team, group_laser_player, True, True):
                     points += 15
@@ -272,10 +290,8 @@ class Game(object):
                     group_explosion.add(Explosion(droid.rect, "explosion"))
                 # Когда мы прикасаемся к энергии
                 for e in pygame.sprite.groupcollide(group_energy, player_team, True, False):
-                    if energy < 100:
-                        energy += e.energy_lvl  # Пополняем энергию игрока
-                        if energy >= 100:
-                            energy = 100
+                    energy += e.energy_lvl  # Пополняем энергию игрока
+
                 # =============================
                 # ОБНОВЛЯЕМ ВСЕ ГРУППЫ
                 # =============================
@@ -314,6 +330,11 @@ class Game(object):
                 objectives_box.text = "Вы уничтожили: {} дроидов".format(destroyed_enemy_counter)
                 challenge_box.text = "Осталось: {} дроидов".format(game_challenge - destroyed_enemy_counter)
                 time_box.text = "Время: %.2f" % time_elapsed
+                if energy < 0:
+                    energy = 0
+                elif energy > 100:
+                    energy = 100
+                show_energy_bar(energy)
 
                 pygame.display.update()
                 self.time.tick(FPS)
