@@ -12,7 +12,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, index_nik=1):
         pygame.sprite.Sprite.__init__(self)
         self.list_spaceship = []
-        self.index = 0
+        self.index = -1
         self.speed_image = 0
         for i in range(10):  # Загружаем картинки
             path_img = os.path.join('data', 'images', 'spaceship', str(index_nik),  "spaceship_" + str(i + 1) + '.png')
@@ -32,7 +32,7 @@ class Player(pygame.sprite.Sprite):
             if self.index < len(self.list_spaceship):  # Отображаем изображение
                 self.image = self.list_spaceship[self.index]
             else:
-                self.index = 0
+                self.index = -1
 
         self.rect.move_ip((self.x_speed, self.y_speed))  # Смещение коробля игрока в указанном направлении
         if self.rect.left < 250:  # Проверка на превышение стороны
@@ -55,14 +55,13 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.list_droid = []
-        self.index = 0
+        self.index = -1
         self.speed_image = 0
         for i in range(2):  # Загружаем картинки
             path_img = os.path.join('data', 'images', 'droid', "droid_" + str(i + 1) + '.png')
             self.list_droid.append(load_image(path_img, False, (LENGTH_DROID, WIDTH_DROID)))
         self.image = self.list_droid[self.index]
         self.rect = self.image.get_rect()
-        self.rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT)
         self.x_speed = 0  # Перемещение по x
         self.y_speed = 0  # Перемещение по y
 
@@ -84,7 +83,7 @@ class Enemy(pygame.sprite.Sprite):
             if self.index < len(self.list_droid):  # Отображаем изображение
                 self.image = self.list_droid[self.index]
             else:
-                self.index = 0
+                self.index = -1
 
         self.rect.move_ip((self.x_speed, self.y_speed))
         if self.rect.left <= 250 or self.rect.right >= WINDOW_WIDTH:
@@ -142,7 +141,7 @@ class PlayerLaser(pygame.sprite.Sprite):
     def __init__(self, p):
         pygame.sprite.Sprite.__init__(self)
         self.list_laser = []
-        self.index = 0
+        self.index = -1
         self.speed_image = 0
         for i in range(4):  # Загружаем картинки
             path_img = os.path.join('data', 'images', 'player_laser', "laser_player_" + str(i + 1) + '.png')
@@ -160,7 +159,7 @@ class PlayerLaser(pygame.sprite.Sprite):
             if self.index < len(self.list_laser):  # Отображаем изображение
                 self.image = self.list_laser[self.index]
             else:
-                self.index = 0
+                self.index = -1
 
         if self.rect.bottom >= 0:
             self.rect.move_ip((0, -10))
@@ -177,7 +176,7 @@ class LaserEnemy(pygame.sprite.Sprite):
     def __init__(self, p):
         pygame.sprite.Sprite.__init__(self)
         self.list_laser = []
-        self.index = 0
+        self.index = -1
         self.speed_image = 0
         for i in range(4):  # Загружаем картинки
             path_img = os.path.join('data', 'images', 'enemy_laser', "laser_enemy_" + str(i + 1) + '.png')
@@ -195,7 +194,7 @@ class LaserEnemy(pygame.sprite.Sprite):
             if self.index < len(self.list_laser):  # Отображаем изображение
                 self.image = self.list_laser[self.index]
             else:
-                self.index = 0
+                self.index = -1
         if self.rect.bottom >= WINDOW_HEIGHT:
             self.kill()
         else:
@@ -228,7 +227,7 @@ class TextBox(pygame.sprite.Sprite):
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, object_rect, type_explosion="explosion"):
         pygame.sprite.Sprite.__init__(self)
-        self.index = 0
+        self.index = -1
         self.speed_image = 0
         quantity_image = 6  # Количество изображений, содержащихся в анимации
         self.sp_image_explosion = []
