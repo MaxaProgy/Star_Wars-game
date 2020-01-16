@@ -16,10 +16,10 @@ def draw_text(text, source, surface, x, y):
 
 def show_game_result(points):
     if destroyed_enemy_counter >= GAME_CHALLENGE:
-        image = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
+        img = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
     else:
-        image = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
-    window.blit(image, (0, 0))
+        img = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
+    window.blit(img, (0, 0))
     pygame.display.update()
     draw_text(str(points), font_2, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
     pygame.display.update()
@@ -67,21 +67,27 @@ def show_list_nik():
     img_nik = load_image(path.join('data', 'images', 'background', 'background_nik.jpg'), True, DISPLAYMODE)
     window.blit(img_nik, (0, 0))  # Изображение для покрытия фона
     list_nik = []
-    pygame.draw.rect(window, (229, 163, 164), (120, 140, 100, 100), 6)
-    for i in range(NUMBER_NIK):  # Загружаем картинки
-        path_img = os.path.join('data', 'images', 'spaceship', str(i + 1), "spaceship_3.png")
-        list_nik.append(load_image(path_img, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
-        image_nik = list_nik[i]
-        window.blit(image_nik, (150 * (i + 1), 150))
+    for j in range(NUMBER_NIK):  # Загружаем картинки
+        path_image = os.path.join('data', 'images', 'spaceship', str(j + 1), "spaceship_3.png")
+        list_nik.append(load_image(path_image, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
+        image_nik = list_nik[j]
+        window.blit(image_nik, (150 * (j + 1), 150))
     pygame.display.update()
-    wait_for_keystroke()
-    '''key_pressed = pygame.key.get_pressed()
-        if key_pressed[pygame.K_LEFT]:
-            for i in range(NUMBER_NIK):
-                pygame.draw.rect(window, (229, 163, 164), (120 + 100 * i, 140, 100, 100), 6)
-        if key_pressed[pygame.K_RIGHT]:
-            for i in range(NUMBER_NIK):
-                pygame.draw.rect(window, (229, 163, 164), (120 + 100 * i, 140, 100, 100), 6)'''
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit_game()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
+                    exit_game()
+                if event.key == pygame.K_BACKSPACE:
+                    return
+        key_pressed = pygame.key.get_pressed()
+        if key_pressed[pygame.K_1]:
+            pass
+        if key_pressed[pygame.K_2]:
+            pass
 
 
 class Game(object):
@@ -114,14 +120,15 @@ class Game(object):
             group_laser_player = pygame.sprite.RenderUpdates()
             player_team = pygame.sprite.RenderUpdates(player)
             enemy_team = pygame.sprite.RenderUpdates()
-            for i in range(3):
+            for _ in range(3):
                 enemy_team.add(Enemy())
             group_asteroids = pygame.sprite.RenderUpdates()  # Настраиваем врагов
             group_energy = pygame.sprite.RenderUpdates()
             group_explosion = pygame.sprite.RenderUpdates()  # Имитация взрыва
 
             # Фоновое изображение
-            background_game = load_image(path.join('data', 'images', 'background', 'background_2.jpg'), True, DISPLAYMODE)
+            background_game = load_image(path.join('data', 'images', 'background', 'background_2.jpg'),
+                                         True, DISPLAYMODE)
 
             # Меню игрока
             energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 80)
@@ -207,20 +214,18 @@ class Game(object):
 
                 # Смерть персонажа. Мы проверяем, что это сделано один раз
                 if energy <= 0 and check_on_press_keys:
-                    if points > score_top:  # Мы проверяем, превышает ли он лучший результат
-                        score_top = points
                     check_on_press_keys = False  # Чтобы отключить ввод нажатий клавиш
                     group_explosion.add(Explosion(player.rect))
                     player.kill()  # Мы убиваем персонажа
                 # Игрок выигрывает
                 elif destroyed_enemy_counter >= GAME_CHALLENGE:
-                    if points > score_top:  # Мы проверяем, превышает ли он лучший результат
-                        score_top = points
                     player.kill()
                     break
+
                 # =========================
                 # СПРАЙТ СТОЛКНОВЕНИЯ
                 # =========================
+
                 # Урон, нанесенный врагом игроку
                 for player in pygame.sprite.groupcollide(player_team, group_laser_enemy, False, True):
                     energy = energy - 5
@@ -299,6 +304,8 @@ class Game(object):
                 self.time.tick(FPS)
 
             # Мы печатаем счет
+            if points > score_top:  # Мы проверяем, превышает ли он лучший результат
+                score_top = points
             show_game_result(points)
             time_lapse = 4000  # 4 sec
             pygame.time.delay(time_lapse)
