@@ -2,6 +2,7 @@ from os import path
 import pygame
 from image import load_image
 
+COUNT_LASER = 50
 NUMBER_NIK = 2
 LENGTH_LASER = 50
 WIDTH_LASER = 50

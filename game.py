@@ -7,7 +7,7 @@ destroyed_enemy_counter = 0
 game_challenge = 25  # Количество дронов которых необходимо убить
 index_nick = 1
 lvl = 1
-count_laser = 100
+count_laser = COUNT_LASER
 
 
 def show_energy_bar(energy):  # Шкала энергии
@@ -24,11 +24,11 @@ def show_energy_bar(energy):  # Шкала энергии
 
 
 def show_laser_bar(laser):  # Шкала лазеров
-    color = 2.55 * laser
+    color = 5.1 * laser
 
     color_rgb = (255 - color, color, 0)
     pygame.draw.rect(window, (0, 0, 0), (WINDOW_WIDTH - 35, WINDOW_HEIGHT - 135, 30, -110))
-    pygame.draw.rect(window, color_rgb, (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 140, 20, -1 * laser))
+    pygame.draw.rect(window, color_rgb, (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 140, 20, -1 * laser * 2))
 
     for i in range(10):
         pygame.draw.rect(window, (0, 0, 0), (WINDOW_WIDTH - 30, WINDOW_HEIGHT - 140, 20, -10 * (i + 1)), 2)
@@ -45,7 +45,7 @@ def draw_text(text, source, surface, x, y):
 
 
 def show_game_result(points):
-    global destroyed_enemy_counter, game_challenge, lvl
+    global destroyed_enemy_counter, game_challenge, lvl, count_laser
     if destroyed_enemy_counter >= game_challenge:
         img = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
         lvl += 1
@@ -54,6 +54,7 @@ def show_game_result(points):
         img = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
         lvl = 1
         game_challenge = 25
+    count_laser = COUNT_LASER
     destroyed_enemy_counter = 0
     window.blit(img, (0, 0))
     pygame.display.update()
@@ -77,6 +78,7 @@ def pause_game():
                     exit_game()
                 if event.key == pygame.K_p:
                     pause = False
+
         draw_text("PAUSE", font_1, window, (WINDOW_WIDTH / 2) - 50, (WINDOW_HEIGHT / 2))
         pygame.display.update()
 
@@ -144,6 +146,7 @@ class Game(object):
         background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
         window.blit(background, (0, 0))
         self.time = pygame.time.Clock()
+
         pygame.mouse.set_visible(False)  # Прячем мышку на поле
         pygame.display.update()
         while True:
@@ -161,6 +164,7 @@ class Game(object):
         score_top = 0
         delay_laser = 0
         fps_laser = 0
+        time_elapsed = time.clock()
 
         while True:
             if not time.clock():
@@ -215,6 +219,7 @@ class Game(object):
                                 player, group_laser_player, player_team, enemy_team = show_list_nick()
                             if event.key == pygame.K_p:
                                 pause_game()
+                                start_time = time.clock() - time_elapsed
                             if event.key == pygame.K_ESCAPE:
                                 exit_game()
                             if event.key == pygame.K_SPACE:
@@ -235,13 +240,13 @@ class Game(object):
                     if key_pressed[pygame.K_SPACE]:
                         delay_laser += 1
                         fps_laser = 0
-                        if delay_laser == 10:
+                        if delay_laser == 10 and count_laser - 1 > 0:
                             group_laser_player.add(PlayerLaser(player.rect.midtop))
                             delay_laser = 0
                             count_laser -= 1
                     else:
                         fps_laser += 1
-                        if fps_laser == 40 and count_laser < 100:
+                        if fps_laser == 25 and count_laser < COUNT_LASER:
                             count_laser += 1
                             fps_laser = 0
 
@@ -280,7 +285,6 @@ class Game(object):
                     time_current = time.clock()
                 # Устонавливаем конечное время
                 time_elapsed = time_current - start_time
-                time_elapsed *= 2
 
                 # Смерть персонажа. Мы проверяем, что это сделано один раз
                 if energy == 0 and check_on_press_keys:
@@ -319,11 +323,11 @@ class Game(object):
                         asteroid.kill()
                 # Когда астероид попадает на корабль
                 for asteroid in pygame.sprite.groupcollide(group_asteroids, player_team, True, False):
-                    energy -= 12  # Уменьшить энергию, которую имеет корабль
+                    energy -= 10  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(asteroid.rect, "smoke"))
                 # Когда дроид попадает на корабль
                 for droid in pygame.sprite.groupcollide(enemy_team, player_team, True, False):
-                    energy -= 12  # Уменьшить энергию, которую имеет корабль
+                    energy -= 10  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(droid.rect, "explosion"))
                 # Когда мы прикасаемся к энергии
                 for e in pygame.sprite.groupcollide(group_energy, player_team, True, False):
