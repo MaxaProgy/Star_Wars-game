@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import random
 from const import *
@@ -95,6 +96,7 @@ class Enemy(pygame.sprite.Sprite):
         is_shoot = random.randint(1, 80) == 1
         if is_shoot:  # Дроид стреляет, только если разрешено
             group_laser_enemy.add(LaserEnemy(self.rect.midbottom))
+            laser_droid_sound.play()
 
 
 # =========================

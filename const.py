@@ -1,5 +1,15 @@
+# coding=utf-8
 import pygame
+import os
 # Файл констант
+
+
+def load_sound(filename, sound_lvl=1.0):
+    path = os.path.join('data', 'sound', filename)
+    sound = pygame.mixer.Sound(path)
+    sound.set_volume(sound_lvl)  # Настройка громкости звука
+    return sound
+
 
 COUNT_LASER = 50
 NUMBER_NIK = 2
@@ -29,3 +39,18 @@ pygame.init()
 window = pygame.display.set_mode(DISPLAYMODE)
 font_1 = pygame.font.SysFont("RetroComputer[RUS by Daymarius]", 22)
 font_2 = pygame.font.SysFont("RetroComputer[RUS by Daymarius]", 100)
+
+# Настроить звуки
+intro_sound = load_sound('intro.ogg', 0.3)
+explosion_sound = load_sound('explosion_explosion.ogg', 0.3)
+energy_sound = load_sound('energy.ogg', 0.3)
+game_over_sound = load_sound('game_over.ogg', 1.0)
+game_won_sound = load_sound('game_won.ogg', 1.0)
+laser_droid_sound = load_sound("laser_droid.ogg", 0.3)
+laser_player_sound = load_sound('laser_player.ogg', 0.3)
+explosion_player = load_sound("explosion_player.ogg", 0.3)
+explosion_droid = load_sound("explosion_droid.ogg", 0.3)
+explosion_asteroid = load_sound("destroyed_asteroid.ogg", 0.3)
+
+music_channel = pygame.mixer.Channel(4)
+music_channel.play(intro_sound, loops=-1, maxtime=0, fade_ms=0)

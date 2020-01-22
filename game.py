@@ -1,3 +1,4 @@
+# coding=utf-8
 import time
 from sprites import *
 from os import *
@@ -49,10 +50,12 @@ def draw_text(text, source, surface, x, y):
 def show_game_result(points):
     global destroyed_enemy_counter, game_challenge, lvl, count_laser
     if destroyed_enemy_counter >= game_challenge:
+        sound = game_won_sound
         img = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
         lvl += 1
         game_challenge += 5
     else:
+        sound = game_over_sound
         img = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
         lvl = 1
         game_challenge = 25
@@ -62,6 +65,7 @@ def show_game_result(points):
     pygame.display.update()
     draw_text(str(points), font_2, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
     pygame.display.update()
+    music_channel.play(sound, loops=0, maxtime=0, fade_ms=0)
 
 
 def exit_game():
@@ -94,6 +98,18 @@ def wait_for_keystroke():
                 if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
                     exit_game()
                 if event.key == pygame.K_BACKSPACE:
+                    return
+
+
+def wait_for_keystroke_menu():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit_game()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
+                    exit_game()
+                if event.key == pygame.K_SPACE:
                     return
 
 
@@ -142,6 +158,7 @@ class Game(object):
     def __init__(self):
         super(Game, self).__init__()
         pygame.init()
+        pygame.mixer.init(frequency=22050, size=-16, channels=8, buffer=4096)
         pygame.display.set_caption("Star Wars")
         pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         # Фоновое изображение
@@ -151,15 +168,8 @@ class Game(object):
 
         pygame.mouse.set_visible(False)  # Прячем мышку на поле
         pygame.display.update()
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    exit_game()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
-                        exit_game()
-                    if event.key == pygame.K_SPACE:
-                        return
+        wait_for_keystroke_menu()
+        music_channel.stop()
 
     def run(self):
         global destroyed_enemy_counter, game_challenge, count_laser
@@ -290,6 +300,7 @@ class Game(object):
 
                 # Смерть персонажа. Мы проверяем, что это сделано один раз
                 if energy == 0 and check_on_press_keys:
+                    explosion_player.play()
                     check_on_press_keys = False  # Чтобы отключить ввод нажатий клавиш
                     group_explosion.add(Explosion(player.rect))
                     player.kill()  # Мы убиваем персонажа
@@ -309,11 +320,13 @@ class Game(object):
                 for droid in pygame.sprite.groupcollide(enemy_team, group_laser_player, True, True):
                     points += 15
                     group_explosion.add(Explosion(droid.rect, "explosion"))  # Исчезает во взрыве
+                    explosion_droid.play()
                     destroyed_enemy_counter += 1
                 # Лазер уничтожает астероиды
                 for asteroid in pygame.sprite.groupcollide(group_asteroids, group_laser_player, False, True):
                     points += 5
                     group_explosion.add(Explosion(asteroid.rect, "smoke"))  # Исчезает в облаке дыма
+                    explosion_asteroid.play()
                     # Мы спрашиваем, является ли это астероидом (астероид дает энергию для изменения изображения)
                     if asteroid.is_energetic:
                         asteroid.image = asteroid.select_image(path.join('resources', 'energy.png'), True)
@@ -327,13 +340,16 @@ class Game(object):
                 for asteroid in pygame.sprite.groupcollide(group_asteroids, player_team, True, False):
                     energy -= 10  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(asteroid.rect, "smoke"))
+                    explosion_asteroid.play()
                 # Когда дроид попадает на корабль
                 for droid in pygame.sprite.groupcollide(enemy_team, player_team, True, False):
                     energy -= 10  # Уменьшить энергию, которую имеет корабль
                     group_explosion.add(Explosion(droid.rect, "explosion"))
+                    explosion_droid.play()
                 # Когда мы прикасаемся к энергии
                 for e in pygame.sprite.groupcollide(group_energy, player_team, True, False):
                     energy += e.energy_lvl  # Пополняем энергию игрока
+                    energy_sound.play()
 
                 # =============================
                 # ОБНОВЛЯЕМ ВСЕ ГРУППЫ
