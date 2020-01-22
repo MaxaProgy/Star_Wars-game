@@ -53,4 +53,3 @@ explosion_droid = load_sound("explosion_droid.ogg", 0.3)
 explosion_asteroid = load_sound("destroyed_asteroid.ogg", 0.3)
 
 music_channel = pygame.mixer.Channel(4)
-music_channel.play(intro_sound, loops=-1, maxtime=0, fade_ms=0)

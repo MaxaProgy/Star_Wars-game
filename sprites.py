@@ -11,7 +11,7 @@ from image import load_image
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, index_nik=1):
+    def __init__(self, index_nik):
         pygame.sprite.Sprite.__init__(self)
         self.list_spaceship = []
         self.index = -1

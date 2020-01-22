@@ -4,12 +4,9 @@ from sprites import *
 from os import *
 import sys
 from image import load_image
+import sqlite3
 
-# Он будет увеличиваться по мере уничтожения дроидов, пока мы не достигнем цели
-destroyed_enemy_counter = 0
-game_challenge = 25  # Количество дронов которых необходимо убить
-index_nick = 1
-lvl = 1
+
 count_laser = COUNT_LASER
 
 
@@ -48,7 +45,7 @@ def draw_text(text, source, surface, x, y):
 
 
 def show_game_result(points):
-    global destroyed_enemy_counter, game_challenge, lvl, count_laser
+    global destroyed_enemy_counter, game_challenge, lvl, count_laser, index_nick, score_top
     if destroyed_enemy_counter >= game_challenge:
         sound = game_won_sound
         img = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
@@ -58,9 +55,9 @@ def show_game_result(points):
         sound = game_over_sound
         img = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
         lvl = 1
-        game_challenge = 25
-    count_laser = COUNT_LASER
+        game_challenge = 3
     destroyed_enemy_counter = 0
+    new_data(lvl, game_challenge, index_nick, score_top, destroyed_enemy_counter)
     window.blit(img, (0, 0))
     pygame.display.update()
     draw_text(str(points), font_2, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
@@ -121,6 +118,7 @@ def show_help():
 
 
 def show_list_nick():
+    global index_nick
     img_nick = load_image(path.join('data', 'images', 'background', 'background_nick.jpg'), True, DISPLAYMODE)
     window.blit(img_nick, (0, 0))  # Изображение для покрытия фона
     list_nick = []
@@ -141,9 +139,11 @@ def show_list_nick():
                     return
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_1]:
-            return update_player(1)
+            index_nick = 1
+            return update_player(index_nick)
         if key_pressed[pygame.K_2]:
-            return update_player(2)
+            index_nick = 2
+            return update_player(index_nick)
 
 
 def update_player(index):
@@ -154,26 +154,52 @@ def update_player(index):
     return player, group_laser_player, player_team, enemy_team
 
 
+def new_game():
+    pygame.mixer.init(frequency=22050, size=-16, channels=8, buffer=4096)
+    music_channel.play(intro_sound, loops=-1, maxtime=0, fade_ms=0)
+    pygame.display.set_caption("Star Wars")
+    # pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    # Фоновое изображение
+    background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
+    window.blit(background, (0, 0))
+    pygame.mouse.set_visible(False)  # Прячем мышку на поле
+    pygame.display.update()
+    wait_for_keystroke_menu()
+    music_channel.stop()
+
+
+def new_data(l, challenge, nick, score, destroyed_enemy):
+    global count_laser
+    count_laser = COUNT_LASER
+    con = sqlite3.connect(path.join('data', 'database', 'player data.db'))
+    cur = con.cursor()
+    cur.execute("""INSERT INTO game (lvl, challenge, index_nick, score, destroyed_enemy_counter)
+                VALUES(?, ?, ?, ?, ?)""", (l, challenge, nick, score, destroyed_enemy))
+    con.commit()
+    con.close()
+
+
 class Game(object):
     def __init__(self):
         super(Game, self).__init__()
         pygame.init()
-        pygame.mixer.init(frequency=22050, size=-16, channels=8, buffer=4096)
-        pygame.display.set_caption("Star Wars")
-        pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        # Фоновое изображение
-        background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
-        window.blit(background, (0, 0))
+        new_game()
         self.time = pygame.time.Clock()
 
-        pygame.mouse.set_visible(False)  # Прячем мышку на поле
-        pygame.display.update()
-        wait_for_keystroke_menu()
-        music_channel.stop()
-
     def run(self):
-        global destroyed_enemy_counter, game_challenge, count_laser
-        score_top = 0
+        global destroyed_enemy_counter, count_laser, index_nick, lvl, game_challenge, score_top
+        con = sqlite3.connect(path.join('data', 'database', 'player data.db'))
+        cur = con.cursor()
+        result = cur.execute('''SELECT lvl, challenge, index_nick, score, destroyed_enemy_counter FROM game
+                                    WHERE ID = (SELECT MAX(ID) FROM game)''')
+        for elem in result:
+            lvl = elem[0]  # Текущий уровень
+            game_challenge = elem[1]  # Количество дронов которых необходимо убить
+            index_nick = elem[2]  # Индекс ника
+            score_top = elem[3]  # Лучший счет
+            destroyed_enemy_counter = elem[4]  # Количество уничтоженых дроидов
+        con.commit()
+        con.close()
         delay_laser = 0
         fps_laser = 0
         time_elapsed = time.clock()
@@ -234,11 +260,14 @@ class Game(object):
                                 start_time = time.clock() - time_elapsed
                             if event.key == pygame.K_ESCAPE:
                                 exit_game()
+                            if event.key == pygame.K_n:
+                                lvl, game_challenge,  index_nick, score_top, destroyed_enemy_counter = 1, 3, 1, 0, 0
+                                new_data(lvl, game_challenge,  index_nick, score_top, destroyed_enemy_counter)
+                                new_game()
                             if event.key == pygame.K_SPACE:
                                 delay_laser = 9
                         elif event.type == pygame.KEYUP:
                             player.x_speed, player.y_speed = 0, 0
-
                     # Перемещение игрока в пространстве(на экране)
                     key_pressed = pygame.key.get_pressed()
                     if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
@@ -389,6 +418,8 @@ class Game(object):
                 objectives_box.text = "Вы уничтожили: {} дроидов".format(destroyed_enemy_counter)
                 challenge_box.text = "Осталось: {} дроидов".format(game_challenge - destroyed_enemy_counter)
                 time_box.text = "Время: %.2f" % time_elapsed
+                lvl_box.text = "Уровень: {}".format(lvl)
+
                 if energy < 0:
                     energy = 0
                 elif energy > 100:
