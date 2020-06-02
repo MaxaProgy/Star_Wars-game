@@ -5,7 +5,7 @@ import os
 
 
 def load_sound(filename, sound_lvl=1.0):
-    path = os.path.join('data', 'sound', filename)
+    path = os.path.join('static', 'sound', filename)
     sound = pygame.mixer.Sound(path)
     sound.set_volume(sound_lvl)  # Настройка громкости звука
     return sound

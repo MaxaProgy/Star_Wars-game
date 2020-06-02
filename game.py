@@ -48,12 +48,12 @@ def show_game_result(points):
     global destroyed_enemy_counter, game_challenge, lvl, count_laser, index_nick, score_top
     if destroyed_enemy_counter >= game_challenge:
         sound = game_won_sound
-        img = load_image(path.join('data', 'images', 'background', 'game_won.jpg'), True, DISPLAYMODE)
+        img = load_image(path.join('static', 'img', 'background', 'game_won.jpg'), True, DISPLAYMODE)
         lvl += 1
         game_challenge += 5
     else:
         sound = game_over_sound
-        img = load_image(path.join('data', 'images', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
+        img = load_image(path.join('static', 'img', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
         lvl = 1
         game_challenge = 3
     destroyed_enemy_counter = 0
@@ -111,7 +111,7 @@ def wait_for_keystroke_menu():
 
 
 def show_help():
-    img_help = load_image(path.join('data', 'images', 'background', 'background_help.jpg'), True, DISPLAYMODE)
+    img_help = load_image(path.join('static', 'img', 'background', 'background_help.jpg'), True, DISPLAYMODE)
     window.blit(img_help, (0, 0))  # Изображение для покрытия фона
     pygame.display.update()
     wait_for_keystroke()  # Мы не выйдем из цикла, пока не нажмем любую клавишу
@@ -119,11 +119,11 @@ def show_help():
 
 def show_list_nick():
     global index_nick
-    img_nick = load_image(path.join('data', 'images', 'background', 'background_nick.jpg'), True, DISPLAYMODE)
+    img_nick = load_image(path.join('static', 'img', 'background', 'background_nick.jpg'), True, DISPLAYMODE)
     window.blit(img_nick, (0, 0))  # Изображение для покрытия фона
     list_nick = []
     for j in range(NUMBER_NIK):  # Загружаем картинки
-        path_image = os.path.join('data', 'images', 'spaceship', str(j + 1), "spaceship_3.png")
+        path_image = os.path.join('static', 'img', 'spaceship', str(j + 1), "spaceship_3.png")
         list_nick.append(load_image(path_image, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
         image_nick = list_nick[j]
         window.blit(image_nick, (150 * (j + 1), 150))
@@ -160,7 +160,7 @@ def new_game():
     pygame.display.set_caption("Star Wars")
     # pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     # Фоновое изображение
-    background = load_image(path.join('data', 'images', 'background', 'background_1.jpg'), True, DISPLAYMODE)
+    background = load_image(path.join('static', 'img', 'background', 'background_1.jpg'), True, DISPLAYMODE)
     window.blit(background, (0, 0))
     pygame.mouse.set_visible(False)  # Прячем мышку на поле
     pygame.display.update()
@@ -171,7 +171,7 @@ def new_game():
 def new_data(l, challenge, nick, score, destroyed_enemy):
     global count_laser
     count_laser = COUNT_LASER
-    con = sqlite3.connect(path.join('data', 'database', 'player data.db'))
+    con = sqlite3.connect(path.join('db', 'player data.db'))
     cur = con.cursor()
     cur.execute("""INSERT INTO game (lvl, challenge, index_nick, score, destroyed_enemy_counter)
                 VALUES(?, ?, ?, ?, ?)""", (l, challenge, nick, score, destroyed_enemy))
@@ -188,7 +188,7 @@ class Game(object):
 
     def run(self):
         global destroyed_enemy_counter, count_laser, index_nick, lvl, game_challenge, score_top
-        con = sqlite3.connect(path.join('data', 'database', 'player data.db'))
+        con = sqlite3.connect(path.join('db', 'player data.db'))
         cur = con.cursor()
         result = cur.execute('''SELECT lvl, challenge, index_nick, score, destroyed_enemy_counter FROM game
                                     WHERE ID = (SELECT MAX(ID) FROM game)''')
@@ -224,7 +224,7 @@ class Game(object):
             group_explosion = pygame.sprite.RenderUpdates()  # Имитация взрыва
 
             # Фоновое изображение
-            background_game = load_image(path.join('data', 'images', 'background', 'background_2.jpg'),
+            background_game = load_image(path.join('static', 'img', 'background', 'background_2.jpg'),
                                          True, DISPLAYMODE)
 
             # Меню игрока

@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.index = -1
         self.speed_image = 0
         for i in range(10):  # Загружаем картинки
-            path_img = os.path.join('data', 'images', 'spaceship', str(index_nik),  "spaceship_" + str(i + 1) + '.png')
+            path_img = os.path.join('static', 'img', 'spaceship', str(index_nik),  "spaceship_" + str(i + 1) + '.png')
             self.list_spaceship.append(load_image(path_img, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
 
         self.image = self.list_spaceship[self.index]
@@ -60,7 +60,7 @@ class Enemy(pygame.sprite.Sprite):
         self.index = -1
         self.speed_image = 0
         for i in range(2):  # Загружаем картинки
-            path_img = os.path.join('data', 'images', 'droid', "droid_" + str(i + 1) + '.png')
+            path_img = os.path.join('static', 'img', 'droid', "droid_" + str(i + 1) + '.png')
             self.list_droid.append(load_image(path_img, False, (LENGTH_DROID, WIDTH_DROID)))
         self.image = self.list_droid[self.index]
         self.rect = self.image.get_rect()
@@ -127,7 +127,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.kill()
 
     def select_image(self, archive, is_energy=False):
-        path_img = os.path.join('data', 'images', archive)
+        path_img = os.path.join('static', 'img', archive)
         if is_energy:  # Мы спрашиваем, стоит ли менять изображение на энергию
             image = load_image(path_img, False, (int(30 / 2), int(30 / 2)))
         else:  # Изображение любого метеорита
@@ -147,7 +147,7 @@ class PlayerLaser(pygame.sprite.Sprite):
         self.index = -1
         self.speed_image = 0
         for i in range(4):  # Загружаем картинки
-            path_img = os.path.join('data', 'images', 'player_laser', "laser_player_" + str(i + 1) + '.png')
+            path_img = os.path.join('static', 'img', 'player_laser', "laser_player_" + str(i + 1) + '.png')
             self.list_laser.append(load_image(path_img, False, (LENGTH_LASER, WIDTH_LASER)))
 
         self.image = self.list_laser[self.index]
@@ -182,7 +182,7 @@ class LaserEnemy(pygame.sprite.Sprite):
         self.index = -1
         self.speed_image = 0
         for i in range(4):  # Загружаем картинки
-            path_img = os.path.join('data', 'images', 'enemy_laser', "laser_enemy_" + str(i + 1) + '.png')
+            path_img = os.path.join('static', 'img', 'enemy_laser', "laser_enemy_" + str(i + 1) + '.png')
             self.list_laser.append(load_image(path_img, False, (LENGTH_LASER, WIDTH_LASER)))
 
         self.image = self.list_laser[self.index]
@@ -236,7 +236,7 @@ class Explosion(pygame.sprite.Sprite):
         self.sp_image_explosion = []
 
         for i in range(0, quantity_image):  # Загружаем картинки
-            path_img = os.path.join('data', 'images', 'animation', type_explosion + str(i + 1) + '.png')
+            path_img = os.path.join('static', 'img', 'animation', type_explosion + str(i + 1) + '.png')
             self.sp_image_explosion.append(load_image(path_img, False, object_rect.size))
 
         self.image = self.sp_image_explosion[self.index]
