@@ -1,4 +1,9 @@
 # coding=utf-8
+
+# //////////////////
+# ФАЙЛ СОБЫТИЙ ИГРЫ
+# //////////////////
+
 import time
 from sprites import *
 from os import *
@@ -7,10 +12,10 @@ from image import load_image
 import sqlite3
 
 
-count_laser = COUNT_LASER
+count_laser = COUNT_LASER_BAR  # Получаем количество выстрелов лазера игрока
 
 
-def show_energy_bar(energy):  # Шкала энергии
+def show_energy_bar(energy):  # Функция отрисовки шкалы энергии
     color = 2.55 * energy
 
     color_rgb = (255 - color, color, 0)
@@ -23,7 +28,7 @@ def show_energy_bar(energy):  # Шкала энергии
     pygame.draw.rect(window, (255, 255, 255), (WINDOW_WIDTH - 35, WINDOW_HEIGHT - 25, 30, -110), 2)
 
 
-def show_laser_bar(laser):  # Шкала лазеров
+def show_laser_bar(laser):  # Функция отрисовки шкалы количества пуль
     color = 5.1 * laser
 
     color_rgb = (255 - color, color, 0)
@@ -37,41 +42,45 @@ def show_laser_bar(laser):  # Шкала лазеров
 
 
 def draw_text(text, source, surface, x, y):
-    # Временный объект, используемый только для получения прямоугольника (text_obj.get_rect ())
-    text_object = source.render(text, True, TEXTCOLOR)
+    # Временный объект, используемый только для получения прямоугольника (text_obj.get_rect())
+    text_object = source.render(text, True, TEXT_COLOR)
     text_rect = text_object.get_rect()
     text_rect.topleft = (x, y)
-    surface.blit(source.render(text, True, TEXTCOLOR), text_rect)
+    surface.blit(source.render(text, True, TEXT_COLOR), text_rect)
 
 
-def show_game_result(points):
+def show_game_result(points):  # Функция отображения результатов уровня
     global destroyed_enemy_counter, game_challenge, lvl, count_laser, index_nick, score_top
+
+    # Если мы выполнили норму уровня по количеству убитых дроидов, то мы выйграли
     if destroyed_enemy_counter >= game_challenge:
-        sound = game_won_sound
-        img = load_image(path.join('static', 'img', 'background', 'game_won.jpg'), True, DISPLAYMODE)
-        lvl += 1
-        game_challenge += 5
+        sound = game_won_sound  # Музыка для победы
+        img = load_image(path.join('static', 'img', 'background', 'game_won.jpg'), True, DISPLAYMODE)  # Получаем фон
+        lvl += 1  # Увеличиваем уровень
+        game_challenge += 5  # Увеличиваем задачу на следующий уровень
     else:
-        sound = game_over_sound
-        img = load_image(path.join('static', 'img', 'background', 'game_lost.jpg'), True, DISPLAYMODE)
-        lvl = 1
-        game_challenge = 3
-    destroyed_enemy_counter = 0
-    new_data(lvl, game_challenge, index_nick, score_top, destroyed_enemy_counter)
-    window.blit(img, (0, 0))
-    pygame.display.update()
+        sound = game_over_sound  # Музыка для проигрыша
+        img = load_image(path.join('static', 'img', 'background', 'game_lost.jpg'), True, DISPLAYMODE)  # Получаем фон
+        lvl = 1  # Обнуляем уровень до 1
+        game_challenge = 3  # Устонавливаем задачу для 1 уровня
+    destroyed_enemy_counter = 0  # Обнуляем количество убитых на текущем уровне
+    new_data(lvl, game_challenge, index_nick, score_top, destroyed_enemy_counter)  # Вносим изменения в базу данных
+    window.blit(img, (0, 0))  # Устанавливаю новый фон
+    # Выводим результат игрока на экран
     draw_text(str(points), font_2, window, (WINDOW_WIDTH / 2) - 20, (WINDOW_HEIGHT / 2) - 20)
     pygame.display.update()
-    music_channel.play(sound, loops=0, maxtime=0, fade_ms=0)
+    music_channel.play(sound, loops=0, maxtime=0, fade_ms=0)  # Включаем музыку
 
 
-def exit_game():
+def exit_game():  # Функция выхода из игры
     pygame.quit()
     sys.exit()
 
 
-def pause_game():
+def pause_game():  # Функция паузы
     pause = True
+    # Пока пользователь не нажмет на кнопку P, он не выйдет из паузы
+    # Но пользователь может выйти из игры
     while pause:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -86,7 +95,9 @@ def pause_game():
         pygame.display.update()
 
 
-def wait_for_keystroke():
+def wait_for_keystroke():  # Функция клавиш для выйгрыша и проигрыша
+    # Пользователь не начнет игру, пока не нажмет на BACK
+    # Но пользователь может выйти из игры
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -98,7 +109,9 @@ def wait_for_keystroke():
                     return
 
 
-def wait_for_keystroke_menu():
+def wait_for_keystroke_menu():  # Функция клавиш главного меню
+    # Пользователь не начнет игру, пока не нажмет на SPACE
+    # Но пользователь может выйти из игры
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -110,24 +123,29 @@ def wait_for_keystroke_menu():
                     return
 
 
-def show_help():
+def show_help():  # Функция отображения подсказки
+    # Получаем фон
     img_help = load_image(path.join('static', 'img', 'background', 'background_help.jpg'), True, DISPLAYMODE)
-    window.blit(img_help, (0, 0))  # Изображение для покрытия фона
+    window.blit(img_help, (0, 0))  # Устанавливаю фон
     pygame.display.update()
     wait_for_keystroke()  # Мы не выйдем из цикла, пока не нажмем любую клавишу
 
 
-def show_list_nick():
+def show_list_nick():  # Функция смены ника
     global index_nick
+    # Получаем фон
     img_nick = load_image(path.join('static', 'img', 'background', 'background_nick.jpg'), True, DISPLAYMODE)
-    window.blit(img_nick, (0, 0))  # Изображение для покрытия фона
+    window.blit(img_nick, (0, 0))  # Устанавливаю фон
     list_nick = []
-    for j in range(NUMBER_NIK):  # Загружаем картинки
+    for j in range(NUMBER_NIK):  # Загружаем картинки ников для выбора
         path_image = os.path.join('static', 'img', 'spaceship', str(j + 1), "spaceship_3.png")
         list_nick.append(load_image(path_image, False, (LENGTH_SPACESHIP, WIDTH_SPACESHIP)))
         image_nick = list_nick[j]
         window.blit(image_nick, (150 * (j + 1), 150))
     pygame.display.update()
+    # Пользователь не начнет игру, пока не нажмет на BACK
+    # Но пользователь может выйти из игры
+    # Может выбрать ник нажав на цифру порядкового номера ника
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -139,38 +157,38 @@ def show_list_nick():
                     return
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_1]:
-            index_nick = 1
-            return update_player(index_nick)
+            index_nick = 1  # Устанавливаю новый ник
+            return update_player(index_nick)  # Получаю изменения
         if key_pressed[pygame.K_2]:
-            index_nick = 2
-            return update_player(index_nick)
+            index_nick = 2  # Устанавливаю новый ник
+            return update_player(index_nick)  # Получаю изменения
 
 
-def update_player(index):
-    player = Player(index)  # Настраиваем игрока
+def update_player(index):  # Функция обновления спрайтов
+    player = Player(index)
     group_laser_player = pygame.sprite.RenderUpdates()
     player_team = pygame.sprite.RenderUpdates(player)
     enemy_team = pygame.sprite.RenderUpdates()
     return player, group_laser_player, player_team, enemy_team
 
 
-def new_game():
-    pygame.mixer.init(frequency=22050, size=-16, channels=8, buffer=4096)
-    music_channel.play(intro_sound, loops=-1, maxtime=0, fade_ms=0)
+def new_game():  # Функция меню игры при первом входе и сбросе на новую игру
+    pygame.mixer.init(frequency=22050, size=-16, channels=8, buffer=4096)  # Настраиваем музыку
+    music_channel.play(intro_sound, loops=-1, maxtime=0, fade_ms=0)  # Включаем музыку
     pygame.display.set_caption("Star Wars")
-    # pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    # pygame.display.set_mode((0, 0), pygame.FULLSCREEN)   # Развертывание на полный экран
     # Фоновое изображение
     background = load_image(path.join('static', 'img', 'background', 'background_1.jpg'), True, DISPLAYMODE)
     window.blit(background, (0, 0))
     pygame.mouse.set_visible(False)  # Прячем мышку на поле
     pygame.display.update()
-    wait_for_keystroke_menu()
-    music_channel.stop()
+    wait_for_keystroke_menu()  # Клавиши
+    music_channel.stop()  # Остонавливаем музыку
 
 
-def new_data(l, challenge, nick, score, destroyed_enemy):
+def new_data(l, challenge, nick, score, destroyed_enemy):  # Функция сохранения новых значений в базу данных
     global count_laser
-    count_laser = COUNT_LASER
+    count_laser = COUNT_LASER_BAR
     con = sqlite3.connect(path.join('db', 'player data.db'))
     cur = con.cursor()
     cur.execute("""INSERT INTO game (lvl, challenge, index_nick, score, destroyed_enemy_counter)
@@ -183,15 +201,15 @@ class Game(object):
     def __init__(self):
         super(Game, self).__init__()
         pygame.init()
-        new_game()
-        self.time = pygame.time.Clock()
+        new_game()  # Отображаем меню
+        self.time = pygame.time.Clock()  # Создаем объект времени
 
     def run(self):
         global destroyed_enemy_counter, count_laser, index_nick, lvl, game_challenge, score_top
         con = sqlite3.connect(path.join('db', 'player data.db'))
         cur = con.cursor()
         result = cur.execute('''SELECT lvl, challenge, index_nick, score, destroyed_enemy_counter FROM game
-                                    WHERE ID = (SELECT MAX(ID) FROM game)''')
+                                    WHERE ID = (SELECT MAX(ID) FROM game)''')  # Забираем последние данные из базы
         for elem in result:
             lvl = elem[0]  # Текущий уровень
             game_challenge = elem[1]  # Количество дронов которых необходимо убить
@@ -200,75 +218,83 @@ class Game(object):
             destroyed_enemy_counter = elem[4]  # Количество уничтоженых дроидов
         con.commit()
         con.close()
+        # Начальные данные игры
         delay_laser = 0
         fps_laser = 0
         time_elapsed = time.clock()
 
-        while True:
+        while True:  # Цикл уровня
             if not time.clock():
                 start_time = time.perf_counter()
             else:
                 start_time = time.clock()
 
-            enemy_creation_period = 2
-            energy = INIT_ENERGY
-            points = 0
-            counter_asteroid = 0
+            enemy_creation_period = 2  # Период за который энергия начинает возобновляться
+            energy = INIT_ENERGY  # Получаем количество энергии
+            points = 0  # Счет
+            counter_asteroid = 0  # Количество
 
             # Настраиваем игрока и врага
             player, group_laser_player, player_team, enemy_team = update_player(index_nick)
-            for _ in range(3):
+            for _ in range(3):  # Первые 3 дроида в уровне
                 enemy_team.add(Enemy())
-            group_asteroids = pygame.sprite.RenderUpdates()  # Настраиваем врагов
-            group_energy = pygame.sprite.RenderUpdates()
-            group_explosion = pygame.sprite.RenderUpdates()  # Имитация взрыва
+            group_asteroids = pygame.sprite.RenderUpdates()  # Астероиды
+            group_energy = pygame.sprite.RenderUpdates()  # Энергия
+            group_explosion = pygame.sprite.RenderUpdates()  # Взрывы
 
             # Фоновое изображение
             background_game = load_image(path.join('static', 'img', 'background', 'background_2.jpg'),
                                          True, DISPLAYMODE)
 
             # Меню игрока
-            energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, 10, 80)
-            score_top_box = TextBox("Лучший счет: {}".format(score_top), font_1, 10, 120)
-            objectives_box = TextBox("Вы уничтожили: {} дроидов".format(destroyed_enemy_counter), font_1, 10, 160)
+            energy_box = TextBox("Жизненная энергия: {}".format(energy), font_1, (10, 80))  # Энергия
+            score_top_box = TextBox("Лучший счет: {}".format(score_top), font_1, (10, 120))  # Лучший счет
+            # Количество уничтоженных дроидов
+            objectives_box = TextBox("Вы уничтожили: {} дроидов".format(destroyed_enemy_counter), font_1, (10, 160))
             challenge_box = TextBox("Осталось: {} дроидов".format(game_challenge - destroyed_enemy_counter),
-                                    font_1, 10, 200)
-            time_box = TextBox("Время: {0:.2f}".format(start_time), font_1, 10, 240)
-            points_box = TextBox("Счёт: {}".format(points), font_1, 10, 280)
-            lvl_box = TextBox("Уровень: {}".format(lvl), font_1, 10, 320)
+                                    font_1, (10, 200))  # Количество оставшихся дроидов
+            time_box = TextBox("Время: {0:.2f}".format(start_time), font_1, (10, 240))  # Время
+            points_box = TextBox("Счёт: {}".format(points), font_1, (10, 280))  # Счет
+            lvl_box = TextBox("Уровень: {}".format(lvl), font_1, (10, 320))  # Уровень
             group_box = pygame.sprite.RenderUpdates(points_box, score_top_box, objectives_box, challenge_box,
                                                     time_box, energy_box, lvl_box)
 
             counter_loop = 0
             check_on_press_keys = True
-            while True:
+            while True:  # Цикл действий игры
                 # Отрисовываем задний фон
                 window.blit(background_game, (0, 0))
                 # После проигрыша доступ к клавишам ограничивается
                 if check_on_press_keys:
                     for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
+                        if event.type == pygame.QUIT:  # Выход
                             exit_game()
                         elif event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_F1:
+                            if event.key == pygame.K_F1:  # Помошь
                                 show_help()
-                            if event.key == pygame.K_F2:
+                                # Отнимаю время, которое пользователь находился в паузе
+                                start_time = time.clock() - time_elapsed
+                            if event.key == pygame.K_F2:  # Смена ника
                                 player.kill()
                                 player, group_laser_player, player_team, enemy_team = show_list_nick()
-                            if event.key == pygame.K_p:
-                                pause_game()
+                                # Отнимаю время, которое пользователь находился в паузе
                                 start_time = time.clock() - time_elapsed
-                            if event.key == pygame.K_ESCAPE:
-                                exit_game()
-                            if event.key == pygame.K_n:
+                            if event.key == pygame.K_p:  # Пауза
+                                pause_game()
+                                # Отнимаю время, которое пользователь находился в паузе
+                                start_time = time.clock() - time_elapsed
+                            if event.key == pygame.K_n:  # Новая игра
+                                # Обнуляем и сохраняем данные, удаляем врагов
                                 lvl, game_challenge,  index_nick, score_top, destroyed_enemy_counter = 1, 3, 1, 0, 0
                                 new_data(lvl, game_challenge,  index_nick, score_top, destroyed_enemy_counter)
                                 new_game()
-                            if event.key == pygame.K_SPACE:
+                            if event.key == pygame.K_SPACE:  # При каждом нажатии убираем задержку выстрела
                                 delay_laser = 9
                         elif event.type == pygame.KEYUP:
+                            # Постоянно обнуляем, иначе будет ездить туда сюда =)
                             player.x_speed, player.y_speed = 0, 0
-                    # Перемещение игрока в пространстве(на экране)
+
+                    # Меняем положение игрок в соответствии с нажатыми клавишами
                     key_pressed = pygame.key.get_pressed()
                     if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
                         player.x_speed = -RATE_PLAYER_SPEED
@@ -278,27 +304,28 @@ class Game(object):
                         player.y_speed = -RATE_PLAYER_SPEED
                     if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
                         player.y_speed = RATE_PLAYER_SPEED
-                    if key_pressed[pygame.K_SPACE]:
-                        delay_laser += 1
-                        fps_laser = 0
+                    if key_pressed[pygame.K_SPACE]:  # Стреляем
+                        delay_laser += 1  # Увеличиваем задержку
+                        fps_laser = 0  # Обнуляем fps (количество кадров в секунду для выстрела)
                         if delay_laser == 10 and count_laser - 1 > 0:
-                            group_laser_player.add(PlayerLaser(player.rect.midtop))
-                            delay_laser = 0
-                            count_laser -= 1
+                            group_laser_player.add(PlayerLaser(player.rect.midtop))  # Добавляем выстрел в группу
+                            delay_laser = 0  # Обнуляем задержку
+                            count_laser -= 1  # Уменьшаем количество выстрелов
                     else:
-                        fps_laser += 1
-                        if fps_laser == 25 and count_laser < COUNT_LASER:
-                            count_laser += 1
-                            fps_laser = 0
+                        fps_laser += 1  # Увеличиваем fps (количество кадров в секунду для выстрела)
+                        if fps_laser == 25 and count_laser < COUNT_LASER_BAR:  # Это сделано для плавного выстрелов
+                            count_laser += 1  # Увеличиваем количество выстрелов
+                            fps_laser = 0  # Обнуляем fps (количество кадров в секунду для выстрела)
 
                 else:  # Мы входим в блок сразу после того, как энергия заканчивается
                     # (ЗАДЕРЖКА * 6 - количество изображений анимации) + еще 20 циклов, чтобы иметь момент паузы
-                    total_loops = (DELAY_EXPLOSION * 6) + 20
+                    total_loops = (DELAY * 6) + 20
                     if counter_loop == total_loops:
-                        break  # Мы оставили левый цикл
+                        break  # Выходим во внешний цикл
                     counter_loop += 1  # Увеличиваем счетчик
-                counter_asteroid += 1
-                if counter_asteroid == ADDNEW_ASTEROID_RATE:
+                counter_asteroid += 1  # Увеличиваем счетчик астероида
+                if counter_asteroid == ADD_NEW_ASTEROID_RATE:  # Когда счетчик станет равен,
+                    # то мы создаем один новый асероида
                     counter_asteroid = 0
                     group_asteroids.add(Asteroid())
 
