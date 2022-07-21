@@ -105,7 +105,7 @@ def wait_for_keystroke():  # Функция клавиш для выйгрыша
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:  # Клавиша esc вызывает выход из игры
                     exit_game()
-                if event.key == pygame.K_BACKSPACE:
+                if event.key == pygame.K_BACKSPACE or event.key == pygame.K_SPACE:
                     return
 
 
@@ -210,6 +210,12 @@ class Game(object):
         cur = con.cursor()
         result = cur.execute('''SELECT lvl, challenge, index_nick, score, destroyed_enemy_counter FROM game
                                     WHERE ID = (SELECT MAX(ID) FROM game)''')  # Забираем последние данные из базы
+        lvl = 1
+        game_challenge = 5
+        index_nick = 1
+        score_top = 0
+        destroyed_enemy_counter = 0
+
         for elem in result:
             lvl = elem[0]  # Текущий уровень
             game_challenge = elem[1]  # Количество дронов которых необходимо убить
@@ -461,6 +467,4 @@ class Game(object):
             if points > score_top:  # Мы проверяем, превышает ли он лучший результат
                 score_top = points
             show_game_result(points)
-            time_lapse = 1000
-            pygame.time.delay(time_lapse)
             wait_for_keystroke()
